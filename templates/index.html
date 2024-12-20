@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Downloader.net</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <header>
+        <div class="logo">Downloader.net</div>
+        <nav>
+            <button id="signin-button">Sign In</button>
+            <div id="signin-menu" class="dropdown hidden">
+                <a href="#">Sign In</a>
+                <a href="#">Login</a>
+                <a href="#">Register</a>
+            </div>
+        </nav>
+    </header>
+
+    <div class="hero">
+        <h2>Welcome to Downloader.net</h2>
+        <p>Your one-stop solution for downloading your favorite content. Fast, secure, and easy to use!</p>
+    </div>
+
+    <div class="container">
+        <h1>Add Your Link</h1>
+        <input id="link-input" type="url" placeholder="Enter a link here...">
+        <button id="download-button" class="hidden">Download</button>
+        <hr>
+        <p id="status-message">Paste a link above to get started. Your download will appear below.</p>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 Downloader.net | All rights reserved.</p>
+    </footer>
+
+    <script>
+        const linkInput = document.getElementById('link-input');
+        const downloadButton = document.getElementById('download-button');
+        const statusMessage = document.getElementById('status-message');
+
+        linkInput.addEventListener('input', () => {
+            if (linkInput.value.trim()) {
+                downloadButton.classList.remove('hidden');
+            } else {
+                downloadButton.classList.add('hidden');
+            }
+        });
+
+        downloadButton.addEventListener('click', () => {
+            const link = linkInput.value.trim();
+            if (!link) return;
+
+            statusMessage.textContent = "Processing your request...";
+
+            fetch('/download', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ link })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    statusMessage.textContent = `Error: ${data.error}`;
+                } else {
+                    const downloadLink = document.createElement('a');
+                    downloadLink.href = `/downloads/${data.filename}`;
+                    downloadLink.textContent = "Download Your Video";
+                    downloadLink.target = "_blank";
+                    statusMessage.innerHTML = '';
+                    statusMessage.appendChild(downloadLink);
+                }
+            })
+            .catch(err => {
+                statusMessage.textContent = `Error: ${err.message}`;
+            });
+        });
+    </script>
+</body>
+</html>
